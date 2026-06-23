@@ -1,0 +1,127 @@
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --figlet-line-height: 1.1;
+  }
+  .figlet-banner {
+    line-height: var(--figlet-line-height);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    white-space: pre;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+  .figlet-grid {
+    display: grid;
+  }
+  .figlet-cell {
+    inline-size: 1ch;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .figlet-space {
+    inline-size: 1ch;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .figlet-wave {
+      animation: figlet-wave 1s ease-in-out infinite;
+    }
+  }
+  @keyframes figlet-wave {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-2px); }
+    50% { transform: translateY(0); }
+    75% { transform: translateY(2px); }
+  }
+{%- endstyle -%}
+
+{% assign text = section.settings.text | default: "DEEVELOPER\nOS" %}
+{% assign wave = section.settings.wave %}
+{% assign wave_delay = section.settings.wave_delay | default: 0.025 %}
+
+{% if text != blank %}
+  <div class="figlet-banner">
+    {% assign lines = text | split: "\n" %}
+    {% assign max_length = 0 %}
+    {% for line in lines %}
+      {% if line.size > max_length %}
+        {% assign max_length = line.size %}
+      {% endif %}
+    {% endfor %}
+
+    {% for line in lines %}
+      <div
+        class="figlet-grid"
+        style="grid-template-columns: repeat({{ max_length }}, 1ch);"
+      >
+        {% assign chars = line | split: "" %}
+        {% for char in chars %}
+          <span
+            class="figlet-cell{% if wave %} figlet-wave{% endif %}"
+            {% if wave %}
+              style="animation-delay: -{{ forloop.index0 | times: wave_delay }}s;"
+            {% endif %}
+          >
+            {% if char == " " %}
+              <span class="figlet-space"> </span>
+            {% else %}
+              {{ char }}
+            {% endif %}
+          </span>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    {% if section.settings.show_credit %}
+      <div class="figlet-credit" style="margin-top: 0.75rem; font-size: 0.75rem; opacity: 0.8;">
+        Built by DEEVELOPER
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Built by banner",
+  "tag": "footer",
+  "class": "figlet-banner-section",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Banner text",
+      "default": "DEEVELOPER\nOS",
+      "info": "Use \\n for new lines."
+    },
+    {
+      "type": "checkbox",
+      "id": "wave",
+      "label": "Enable wave animation",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "wave_delay",
+      "min": 0.005,
+      "max": 0.1,
+      "step": 0.005,
+      "unit": "s",
+      "label": "Wave delay",
+      "default": 0.025
+    },
+    {
+      "type": "checkbox",
+      "id": "show_credit",
+      "label": "Show built-by credit",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Built by banner"
+    }
+  ]
+}
+{% endschema %}
